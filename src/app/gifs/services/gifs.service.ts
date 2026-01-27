@@ -1,7 +1,6 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable, tap } from 'rxjs';
-
 import { environment } from '@environments/environment';
 import { Gif } from './../interfaces/gif.interface';
 import { GifMapper } from '../mapper/gif.mapper';
