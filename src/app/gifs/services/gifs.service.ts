@@ -20,7 +20,7 @@ export class GifService {
     this.http
       .get<GiphyResponse>(`${environment.giphyUrl}/gifs/trending`, {
         params: {
-          api_key: environment.apiKey,
+          api_key: environment.giphyApiKey,
           limit: 25,
         },
       })
@@ -29,6 +29,21 @@ export class GifService {
         this.trendingGifs.set(gifs);
         this.trendingGifsLoading.set(false);
         console.log(gifs);
+      });
+  }
+
+  searchGifs(query: string) {
+    this.http
+      .get<GiphyResponse>(`${environment.giphyUrl}/gifs/search`, {
+        params: {
+          api_key: environment.giphyApiKey,
+          q: query,
+          limit: 25,
+        },
+      })
+      .subscribe((response) => {
+        const gifs = GifMapper.mapGiphyResponseToGifs(response.data);
+        console.log({ search: gifs });
       });
   }
 }
