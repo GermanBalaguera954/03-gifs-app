@@ -11,7 +11,6 @@ import { GifList } from '../../components/gif-list/gif-list';
   templateUrl: './gif-history.html',
 })
 export default class GifHistory {
-
   gifService = inject(GifService);
 
   query = toSignal(inject(ActivatedRoute).params.pipe(map((params) => params['query'])));
