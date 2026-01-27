@@ -6,9 +6,9 @@ import { Gif } from '../../interfaces/gif.interface';
 @Component({
   selector: 'app-search-page',
   imports: [GifList, GifList],
-  templateUrl: './search-page.component.html',
+  templateUrl: './search-page.html',
 })
-export default class SearchPageComponent {
+export default class SearchPage {
   gifService = inject(GifService);
   gifs = signal<Gif[]>([]);
 

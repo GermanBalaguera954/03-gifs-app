@@ -8,6 +8,6 @@ import { SideMenu } from "../../components/side-menu/side-menu";
     RouterOutlet,
     SideMenu
 ],
-  templateUrl: './dashboard-page.component.html',
+  templateUrl: './dashboard-page.html',
 })
-export default class DashboardPageComponent { }
+export default class DashboardPage { }
