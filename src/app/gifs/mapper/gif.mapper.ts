@@ -2,7 +2,7 @@ import { Gif } from '../interfaces/gif.interface';
 import { GiphyItem } from '../interfaces/giphy.interface';
 
 export class GifMapper {
-  static mapGiphyToGif(item: GiphyItem): Gif {
+  static mapGiphyItemToGif(item: GiphyItem): Gif {
     return {
       id: item.id,
       title: item.title,
@@ -10,7 +10,7 @@ export class GifMapper {
     };
   }
 
-  static mapGiphyResponseToGifs(items: GiphyItem[]): Gif[] {
-    return items.map(this.mapGiphyToGif);
+  static mapGiphyItemsToGifArray(items: GiphyItem[]): Gif[] {
+    return items.map(this.mapGiphyItemToGif);
   }
 }

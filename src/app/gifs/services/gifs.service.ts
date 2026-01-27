@@ -1,9 +1,28 @@
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { map, Observable, tap } from 'rxjs';
+
 import { environment } from '@environments/environment';
-import { GiphyResponse } from '../interfaces/giphy.interface';
+import { Gif } from './../interfaces/gif.interface';
 import { GifMapper } from '../mapper/gif.mapper';
-import { Gif } from '../interfaces/gif.interface';
+import { GiphyResponse } from '../interfaces/giphy.interface';
+
+const GIF_KEY = 'gifs';
+
+const loadFromLocalStorage = () => {
+  const gifsFromLocalStorage = localStorage.getItem(GIF_KEY) ?? '{}'; //Record<string, gifs[]>
+  const gifs = JSON.parse(gifsFromLocalStorage);
+  console.log(gifs);
+  return gifs;
+};
+
+// {
+//   'goku': [gif1,gif2,gif3],
+//   'saitama': [gif1,gif2,gif3],
+//   'dragon ball': [gif1,gif2,gif3],
+// }
+
+// Record<string, Gif[]>
 
 @Injectable({ providedIn: 'root' })
 export class GifService {
@@ -12,38 +31,65 @@ export class GifService {
   trendingGifs = signal<Gif[]>([]);
   trendingGifsLoading = signal(true);
 
+  searchHistory = signal<Record<string, Gif[]>>(loadFromLocalStorage());
+  searchHistoryKeys = computed(() => Object.keys(this.searchHistory()));
+
   constructor() {
     this.loadTrendingGifs();
   }
+
+  saveGifsToLocalStorage = effect(() => {
+    const historyString = JSON.stringify(this.searchHistory());
+    localStorage.setItem(GIF_KEY, historyString);
+  });
 
   loadTrendingGifs() {
     this.http
       .get<GiphyResponse>(`${environment.giphyUrl}/gifs/trending`, {
         params: {
           api_key: environment.giphyApiKey,
-          limit: 25,
+          limit: 20,
         },
       })
-      .subscribe((response) => {
-        const gifs = GifMapper.mapGiphyResponseToGifs(response.data);
+      .subscribe((resp) => {
+        const gifs = GifMapper.mapGiphyItemsToGifArray(resp.data);
         this.trendingGifs.set(gifs);
         this.trendingGifsLoading.set(false);
-        console.log(gifs);
+        console.log({ gifs });
       });
   }
 
-  searchGifs(query: string) {
-    this.http
+  searchGifs(query: string): Observable<Gif[]> {
+    return this.http
       .get<GiphyResponse>(`${environment.giphyUrl}/gifs/search`, {
         params: {
           api_key: environment.giphyApiKey,
+          limit: 20,
           q: query,
-          limit: 25,
         },
       })
-      .subscribe((response) => {
-        const gifs = GifMapper.mapGiphyResponseToGifs(response.data);
-        console.log({ search: gifs });
-      });
+      .pipe(
+        map(({ data }) => data),
+        map((items) => GifMapper.mapGiphyItemsToGifArray(items)),
+
+        // Historial
+        tap((items) => {
+          this.searchHistory.update((history) => ({
+            ...history,
+            [query.toLowerCase()]: items,
+          }));
+        }),
+      );
+
+    // .subscribe((resp) => {
+    //   const gifs = GifMapper.mapGiphyItemsToGifArray(resp.data);
+
+    //   console.log({ search: gifs });
+    //   return gifs;
+    // });
+  }
+
+  getHistoryGifs(query: string): Gif[] {
+    return this.searchHistory()[query] ?? [];
   }
 }
